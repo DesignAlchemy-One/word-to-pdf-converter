@@ -3,7 +3,7 @@
 - [x] Frontend MVP skeleton deployed ← **Live now!**
 
 ## Live Links
-- Frontend: https://your-actual-vercel-url.vercel.app (replace with your real URL)
+- Frontend: https://word-to-pdf-converter-psi.vercel.app/
 
 ## Decisions Log
 - **December 17, 2025**
