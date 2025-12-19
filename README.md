@@ -1,13 +1,18 @@
 ## Project Status
 - [x] Repository & project bible created
-- [x] Architecture finalized & locked
 - [x] Frontend MVP skeleton deployed
+- [x] File storage configured (Cloudflare R2)
 
-## Live Links
-- **Frontend Landing Page**: https://word-to-pdf-converter-psi.vercel.app
+## Infrastructure
+- **Frontend**: Next.js + Tailwind on Vercel
+  - Live at: https://word-to-pdf-converter-psi.vercel.app
+- **File Storage**: Cloudflare R2
+  - Bucket: da-word-pdf-storage
+  - Secure API token created
+  - Credentials stored as env vars in Vercel
 
 ## Decisions Log
 - **December 18, 2025**
-  - Cleaned up old repository (convert2pdfpro deleted)
-  - Frontend MVP confirmed live and stable at https://word-to-pdf-converter-psi.vercel.app
-  - Project bible updated with current status and live URL
+  - Cloudflare R2 bucket and secure Account API token configured
+  - All R2 environment variables added to Vercel
+  - File storage phase complete
