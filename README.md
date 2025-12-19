@@ -1,11 +1,13 @@
 ## Project Status
 - [x] Repository & project bible created
-- [x] Frontend MVP skeleton deployed ← **Live now!**
+- [x] Architecture finalized & locked
+- [x] Frontend MVP skeleton deployed
 
 ## Live Links
-- Frontend: https://word-to-pdf-converter-psi.vercel.app/
+- **Frontend Landing Page**: https://word-to-pdf-converter-psi.vercel.app
 
 ## Decisions Log
-- **December 17, 2025**
-  - Frontend MVP successfully deployed on Vercel after re-import
-  - Live landing page with Tailwind styling confirmed working
+- **December 18, 2025**
+  - Cleaned up old repository (convert2pdfpro deleted)
+  - Frontend MVP confirmed live and stable at https://word-to-pdf-converter-psi.vercel.app
+  - Project bible updated with current status and live URL
