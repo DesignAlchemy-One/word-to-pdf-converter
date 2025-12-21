@@ -51,6 +51,11 @@ Future ideas:
   - Secure Account API token created
   - All credentials stored as environment variables in Vercel (sensitive values masked in Production/Preview)
 
+## Notes
+- R2 secret env vars set to Production + Preview only with Sensitive enabled (masks values in UI/logs)
+- Development environment excluded (no local dev needed yet)
+- Re-visit if local testing required later
+
 ## High-Level Architecture (How Everything Connects)
 
 ```mermaid
