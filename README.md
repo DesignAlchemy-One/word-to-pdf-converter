@@ -70,13 +70,15 @@ Future ideas:
 
 ## High-Level Architecture (How Everything Connects)
 
+## High-Level Architecture (How Everything Connects)
+
 ```mermaid
 graph TD
     A[User Browser] --> B(Next.js Frontend on Vercel)
     B --> C(Stripe Checkout for payments)
-    B --> D(API Backend on Railway/Render)
-    D --> E(Gotenberg Conversion Service)
+    B --> D(API Backend on Render)
+    D --> E(Gotenberg Conversion Service on Render)
     D --> F(Cloudflare R2 Storage for files)
-    D --> G(PostgreSQL Database - Supabase/Neon)
+    D --> G(PostgreSQL Database - Supabase)
     E --> F
     F --> A[User downloads PDF]
