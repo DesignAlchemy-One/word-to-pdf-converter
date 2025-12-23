@@ -70,8 +70,6 @@ Future ideas:
 
 ## High-Level Architecture (How Everything Connects)
 
-## High-Level Architecture (How Everything Connects)
-
 ```mermaid
 graph TD
     A[User Browser] --> B(Next.js Frontend on Vercel)
