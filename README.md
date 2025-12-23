@@ -25,10 +25,11 @@ Future ideas:
 - API access for developers
 - Remove branding option
 
-## Project Status (What Is Done So Far – December 21, 2025)
-- [x] GitHub repository and project bible created
-- [x] Frontend MVP (landing page) built and deployed
-- [x] File storage fully configured with Cloudflare R2
+## Project Status
+- [x] Repository & project bible created
+- [x] Frontend MVP skeleton deployed
+- [x] File storage configured (Cloudflare R2)
+- [x] Database configured (Supabase Postgres + auth)
 
 ## Core Technology Decisions (Locked In – We Will Not Change These)
 - **Conversion Engine**: Gotenberg (Docker container that uses LibreOffice + Chromium)  
@@ -42,14 +43,21 @@ Future ideas:
 - **Payments**: Existing Stripe modules + webhooks
 - **Extra Infrastructure**: Cloudflare for DNS, CDN, DDoS protection
 
-## Current Infrastructure (What Is Live Right Now)
-- **Frontend**:
-  - Next.js + Tailwind landing page
-  - Live URL: https://word-to-pdf-converter-psi.vercel.app
-- **File Storage**:
-  - Cloudflare R2 bucket name: da-word-pdf-storage
-  - Secure Account API token created
-  - All credentials stored as environment variables in Vercel (sensitive values masked in Production/Preview)
+## Infrastructure (Current)
+- **Frontend**: Next.js + Tailwind on Vercel
+  - Live at: https://word-to-pdf-converter-psi.vercel.app
+- **File Storage**: Cloudflare R2
+  - Bucket: da-word-pdf-storage
+  - Credentials in Vercel env vars
+- **Database**: Supabase (PostgreSQL)
+  - Project: word-to-pdf-converter
+  - Connection string and anon key in Vercel env vars
+
+## Decisions Log
+- **December 23, 2025**
+  - Supabase project created (free tier)
+  - Database connection string and anon key added to Vercel (sensitive scoped)
+  - Database phase complete
 
 ## Notes
 - R2 secret env vars set to Production + Preview only with Sensitive enabled (masks values in UI/logs)
