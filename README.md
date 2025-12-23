@@ -55,6 +55,7 @@ Future ideas:
 - R2 secret env vars set to Production + Preview only with Sensitive enabled (masks values in UI/logs)
 - Development environment excluded (no local dev needed yet)
 - Re-visit if local testing required later
+- When backend is live in production, verify in Vercel logs/UI that R2 secret values are masked and not exposed
 
 ## High-Level Architecture (How Everything Connects)
 
