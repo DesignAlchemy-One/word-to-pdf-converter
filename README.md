@@ -52,12 +52,15 @@ Future ideas:
 - **Database**: Supabase (PostgreSQL)
   - Project: word-to-pdf-converter
   - Connection string and anon key in Vercel env vars
+- **Backend/Conversion Engine**: Gotenberg on Render
+  - Live URL: https://word-to-pdf-gotenberg.onrender.com
+  - Health check: Passed (Chromium + LibreOffice up)
 
 ## Decisions Log
 - **December 23, 2025**
-  - Supabase project created (free tier)
-  - Database connection string and anon key added to Vercel (sensitive scoped)
-  - Database phase complete
+  - Switched to Render for backend (better Docker support)
+  - Gotenberg deployed and health check passed
+  - Backend phase: Conversion engine live
 
 ## Notes
 - R2 secret env vars set to Production + Preview only with Sensitive enabled (masks values in UI/logs)
