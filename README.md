@@ -68,6 +68,12 @@ Future ideas:
 - Re-visit if local testing required later
 - When backend is live in production, verify in Vercel logs/UI that R2 secret values are masked and not exposed
 
+## Project History & Chat Archives
+Full conversation threads and troubleshooting history are archived for reference:
+- `CHAT_HISTORY_THREAD1_DEC2025.md` — Complete chat log from December 2025 (frontend, R2, Supabase, Gotenberg deployment)
+
+## Excellent work G
+
 ## High-Level Architecture (How Everything Connects)
 
 ```mermaid
