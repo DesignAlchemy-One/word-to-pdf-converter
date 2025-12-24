@@ -1,3 +1,5 @@
+'use client';
+
 import { useState } from 'react';
 
 export default function Home() {
@@ -6,7 +8,7 @@ export default function Home() {
   const [downloadUrl, setDownloadUrl] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!file) return;
 
@@ -23,13 +25,16 @@ export default function Home() {
         body: formData,
       });
 
-      if (!res.ok) throw new Error('Conversion failed');
+      if (!res.ok) {
+        const errText = await res.text();
+        throw new Error(errText || 'Conversion failed');
+      }
 
       const blob = await res.blob();
       const url = URL.createObjectURL(blob);
       setDownloadUrl(url);
-    } catch (err) {
-      setError('Something went wrong. Try again?');
+    } catch (err: any) {
+      setError(err.message || 'Something went wrong. Try again?');
     } finally {
       setLoading(false);
     }
@@ -44,7 +49,7 @@ export default function Home() {
         <form onSubmit={handleSubmit} className="space-y-6">
           <input
             type="file"
-            accept=".docx"
+            accept=".docx,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
             onChange={(e) => setFile(e.target.files?.[0] || null)}
             required
             className="block w-full text-sm text-gray-300 file:mr-4 file:py-3 file:px-6 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-indigo-600 file:text-white hover:file:bg-indigo-700"
@@ -53,7 +58,7 @@ export default function Home() {
           <button
             type="submit"
             disabled={!file || loading}
-            className="w-full py-4 px-8 bg-indigo-600 text-white font-bold rounded-full hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full py-4 px-8 bg-indigo-600 text-white font-bold rounded-full hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed transition"
           >
             {loading ? 'Converting... (may take 10-30s first time)' : 'Convert to PDF'}
           </button>
@@ -66,8 +71,8 @@ export default function Home() {
             <p className="text-green-400 mb-4">Conversion complete! 🎉</p>
             <a
               href={downloadUrl}
-              download={file?.name.replace('.docx', '.pdf')}
-              className="inline-block py-4 px-8 bg-green-600 text-white font-bold rounded-full hover:bg-green-700"
+              download={file?.name.replace('.docx', '.pdf') || 'converted.pdf'}
+              className="inline-block py-4 px-8 bg-green-600 text-white font-bold rounded-full hover:bg-green-700 transition"
             >
               Download Your PDF
             </a>
