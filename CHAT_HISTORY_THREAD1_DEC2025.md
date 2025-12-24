@@ -147,7 +147,7 @@ Future: Expand to Excel, PowerPoint, and more formats (like iLovePDF.com).
 - Future upsells: Bulk processing, API access, branding removal
 
 ## High-Level Architecture
-```mermaid
+<!-- ``` commenting out for readability -->mermaid
 graph TD
     A[User Browser] --> B(Next.js Frontend on Vercel)
     B --> C(Stripe Checkout)
@@ -226,7 +226,7 @@ Here’s the exact content to paste:markdown
 
 ## High-Level Architecture
 
-```mermaid
+<!-- ``` commenting out for readability -->mermaid
 graph TD
     A[User Browser] --> B(Next.js Frontend on Vercel)
     B --> C(Stripe Checkout / Customer Portal)
@@ -2016,7 +2016,7 @@ Here is the exact current content of your README.md file (word for word, as of t
 
 ## High-Level Architecture
 
-```mermaid
+<!-- ``` commenting out for readability --> mermaid
 graph TD
     A[User Browser] --> B(Next.js Frontend on Vercel)
     B --> C(Stripe Checkout / Customer Portal)
@@ -2254,7 +2254,7 @@ So, making the README maximally robust is safe and recommended.Proposed ActionI 
 
 ## High-Level Architecture
 
-```mermaid
+<!-- ``` commenting out for readability -->mermaid
 graph TD
     A[User Browser] --> B(Next.js Frontend on Vercel)
     B --> C(Stripe Checkout)
@@ -2351,7 +2351,7 @@ The specific reminder about testing the R2 values in production logs/UI is not t
 
 ## High-Level Architecture
 
-```mermaid
+<!-- ``` commenting out for readability -->mermaid
 graph TD
     A[User Browser] --> B(Next.js Frontend on Vercel)
     B --> C(Stripe Checkout)
@@ -2513,7 +2513,7 @@ Future ideas:
 
 ## High-Level Architecture (How Everything Connects)
 
-```mermaid
+<!-- ``` commenting out for readability -->mermaid
 graph TD
     A[User Browser] --> B(Next.js Frontend on Vercel)
     B --> C(Stripe Checkout for payments)
