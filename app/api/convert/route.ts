@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 
-const GOTENBERG_URL = 'https://word-to-pdf-gotenberg.onrender.com/forms/libreoffice/convert';
+const GOTENBERG_URL = 'https://word-to-pdf-gotenberg-custom.onrender.com/forms/libreoffice/convert';
 
 export async function POST(request: Request) {
   try {
