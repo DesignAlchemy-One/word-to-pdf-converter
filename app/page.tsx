@@ -1,16 +1,44 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 export default function Home() {
   const [file, setFile] = useState<File | null>(null);
   const [loading, setLoading] = useState(false);
   const [downloadUrl, setDownloadUrl] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [conversionsToday, setConversionsToday] = useState(0);
+  const [showUpgrade, setShowUpgrade] = useState(false);
 
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+  const FREE_LIMIT = 10;
+
+  // Load today's conversion count from localStorage
+  useEffect(() => {
+    const today = new Date().toDateString();
+    const saved = localStorage.getItem('pdf_conversions');
+    if (saved) {
+      const data = JSON.parse(saved);
+      if (data.date === today) {
+        setConversionsToday(data.count);
+      }
+    }
+  }, []);
+
+  const incrementConversion = () => {
+    const today = new Date().toDateString();
+    const newCount = conversionsToday + 1;
+    setConversionsToday(newCount);
+    localStorage.setItem('pdf_conversions', JSON.stringify({ date: today, count: newCount }));
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!file) return;
+
+    if (conversionsToday >= FREE_LIMIT) {
+      setShowUpgrade(true);
+      return;
+    }
 
     setLoading(true);
     setError(null);
@@ -33,6 +61,8 @@ export default function Home() {
       const blob = await res.blob();
       const url = URL.createObjectURL(blob);
       setDownloadUrl(url);
+
+      incrementConversion();
     } catch (err: any) {
       setError(err.message || 'Something went wrong. Try again?');
     } finally {
@@ -44,7 +74,10 @@ export default function Home() {
     <main className="min-h-screen bg-gray-900 flex items-center justify-center p-8">
       <div className="max-w-md w-full bg-gray-800 rounded-xl shadow-2xl p-8 text-center">
         <h1 className="text-4xl font-bold text-white mb-4">Word to PDF Converter</h1>
-        <p className="text-gray-300 mb-8">Upload a .docx file → Get a perfect PDF instantly</p>
+        <p className="text-gray-300 mb-2">Upload a .docx file → Get a perfect PDF instantly</p>
+        <p className="text-sm text-gray-400 mb-6">
+          Free tier: {FREE_LIMIT - conversionsToday} / {FREE_LIMIT} conversions left today
+        </p>
 
         <form onSubmit={handleSubmit} className="space-y-6">
           <input
@@ -57,7 +90,7 @@ export default function Home() {
 
           <button
             type="submit"
-            disabled={!file || loading}
+            disabled={!file || loading || conversionsToday >= FREE_LIMIT}
             className="w-full py-4 px-8 bg-indigo-600 text-white font-bold rounded-full hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed transition"
           >
             {loading ? 'Converting... (may take 10-30s first time)' : 'Convert to PDF'}
@@ -76,6 +109,43 @@ export default function Home() {
             >
               Download Your PDF
             </a>
+          </div>
+        )}
+
+        {/* Upgrade Modal */}
+        {showUpgrade && (
+          <div className="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50 p-4">
+            <div className="bg-gray-800 rounded-xl p-8 max-w-md w-full">
+              <h2 className="text-3xl font-bold text-white mb-4">Upgrade for Unlimited</h2>
+              <p className="text-gray-300 mb-8">
+                You've reached the free limit of {FREE_LIMIT} conversions today.
+              </p>
+
+              <div className="space-y-4">
+                <a
+                  href="/api/create-checkout?plan=monthly"
+                  className="block w-full py-5 bg-indigo-600 text-white font-bold rounded-full hover:bg-indigo-700 text-center text-lg transition"
+                >
+                  $2.99 / month<br />
+                  <span className="text-sm font-normal">Unlimited conversions</span>
+                </a>
+
+                <a
+                  href="/api/create-checkout?plan=lifetime"
+                  className="block w-full py-5 bg-green-600 text-white font-bold rounded-full hover:bg-green-700 text-center text-lg transition"
+                >
+                  $9.99 Lifetime<br />
+                  <span className="text-sm font-normal">Everything forever — no recurring fees</span>
+                </a>
+              </div>
+
+              <button
+                onClick={() => setShowUpgrade(false)}
+                className="mt-8 text-gray-400 hover:text-white text-sm"
+              >
+                Maybe later
+              </button>
+            </div>
           </div>
         )}
       </div>
