@@ -122,21 +122,23 @@ export default function Home() {
               </p>
 
               <div className="space-y-4">
-                <a
-                  href="/api/create-checkout?plan=monthly"
-                  className="block w-full py-5 bg-indigo-600 text-white font-bold rounded-full hover:bg-indigo-700 text-center text-lg transition"
-                >
-                  $2.99 / month<br />
-                  <span className="text-sm font-normal">Unlimited conversions</span>
-                </a>
+<a
+  href="https://buy.stripe.com/00w5kD9cY4RA0fM0z04Vy06"
+  target="_blank"
+  className="block w-full py-5 bg-indigo-600 text-white font-bold rounded-full hover:bg-indigo-700 text-center text-lg transition"
+>
+  $2.99 / month<br />
+  <span className="text-sm font-normal">Unlimited conversions</span>
+</a>
 
-                <a
-                  href="/api/create-checkout?plan=lifetime"
-                  className="block w-full py-5 bg-green-600 text-white font-bold rounded-full hover:bg-green-700 text-center text-lg transition"
-                >
-                  $9.99 Lifetime<br />
-                  <span className="text-sm font-normal">Everything forever — no recurring fees</span>
-                </a>
+<a
+  href="https://buy.stripe.com/28EcN53SE1Fo0fMa9A4Vy08"
+  target="_blank"
+  className="block w-full py-5 bg-green-600 text-white font-bold rounded-full hover:bg-green-700 text-center text-lg transition"
+>
+  $9.99 Lifetime<br />
+  <span className="text-sm font-normal">Everything forever — no recurring fees</span>
+</a>
               </div>
 
               <button
