@@ -67,9 +67,22 @@ export default function Home() {
         throw new Error(errText || 'Conversion failed');
       }
 
-      const blob = await res.blob();
-      const url = URL.createObjectURL(blob);
-      setDownloadUrl(url);
+const blob = await res.blob();
+
+// Trigger automatic download
+const downloadUrl = URL.createObjectURL(blob);
+const a = document.createElement('a');
+a.href = downloadUrl;
+a.download = file?.name.replace('.docx', '.pdf') || 'converted.pdf';
+document.body.appendChild(a);
+a.click();
+document.body.removeChild(a);
+URL.revokeObjectURL(downloadUrl);
+
+// Optional: Show success message (no button needed)
+setError(null); // Clear any error
+// You can add a toast or message here if desired
+alert('Download started! Check your downloads folder.');
 
       incrementConversion();
     } catch (err: any) {
