@@ -5,8 +5,8 @@ import { useState, useEffect } from 'react';
 export default function Home() {
   const [file, setFile] = useState<File | null>(null);
   const [loading, setLoading] = useState(false);
-  const [downloadUrl, setDownloadUrl] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [conversionsToday, setConversionsToday] = useState(0);
   const [showUpgrade, setShowUpgrade] = useState(false);
 
@@ -24,13 +24,20 @@ export default function Home() {
     }
   }, []);
 
-  // Automatically show upgrade modal and clear old download when limit reached
+  // Auto-show upgrade modal when limit reached
   useEffect(() => {
     if (conversionsToday >= FREE_LIMIT) {
       setShowUpgrade(true);
-      setDownloadUrl(null); // Clear any old download button
     }
   }, [conversionsToday]);
+
+  // Auto-dismiss success message after 4 seconds
+  useEffect(() => {
+    if (successMessage) {
+      const timer = setTimeout(() => setSuccessMessage(null), 4000);
+      return () => clearTimeout(timer);
+    }
+  }, [successMessage]);
 
   const incrementConversion = () => {
     const today = new Date().toDateString();
@@ -43,7 +50,6 @@ export default function Home() {
     e.preventDefault();
     if (!file) return;
 
-    // If limit reached, show upgrade (redundant but safe)
     if (conversionsToday >= FREE_LIMIT) {
       setShowUpgrade(true);
       return;
@@ -51,7 +57,7 @@ export default function Home() {
 
     setLoading(true);
     setError(null);
-    setDownloadUrl(null);
+    setSuccessMessage(null);
 
     const formData = new FormData();
     formData.append('file', file);
@@ -67,26 +73,24 @@ export default function Home() {
         throw new Error(errText || 'Conversion failed');
       }
 
-const blob = await res.blob();
+      const blob = await res.blob();
 
-// Trigger automatic download
-const downloadUrl = URL.createObjectURL(blob);
-const a = document.createElement('a');
-a.href = downloadUrl;
-a.download = file?.name.replace('.docx', '.pdf') || 'converted.pdf';
-document.body.appendChild(a);
-a.click();
-document.body.removeChild(a);
-URL.revokeObjectURL(downloadUrl);
+      // Trigger automatic download
+      const downloadUrl = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = downloadUrl;
+      a.download = file?.name.replace(/\.docx?$/i, '.pdf') || 'converted.pdf';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(downloadUrl);
 
-// Optional: Show success message (no button needed)
-setError(null); // Clear any error
-// You can add a toast or message here if desired
-alert('Download started! Check your downloads folder.');
+      // Show styled success message — replaces the old alert()
+      setSuccessMessage(`✓ ${file.name.replace(/\.docx?$/i, '.pdf')} is downloading now`);
 
       incrementConversion();
     } catch (err: any) {
-      setError(err.message || 'Something went wrong. Try again?');
+      setError(err.message || 'Something went wrong. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -95,17 +99,36 @@ alert('Download started! Check your downloads folder.');
   return (
     <main className="min-h-screen bg-gray-900 flex items-center justify-center p-8">
       <div className="max-w-md w-full bg-gray-800 rounded-xl shadow-2xl p-8 text-center">
+
         <h1 className="text-4xl font-bold text-white mb-4">Word to PDF Converter</h1>
         <p className="text-gray-300 mb-2">Upload a .docx file → Get a perfect PDF instantly</p>
         <p className="text-sm text-gray-400 mb-6">
           Free tier: {FREE_LIMIT - conversionsToday} / {FREE_LIMIT} conversions left today
         </p>
 
+        {/* ── Success Banner ── */}
+        {successMessage && (
+          <div className="mb-6 px-4 py-3 bg-green-900 border border-green-500 rounded-lg text-green-300 text-sm font-medium animate-pulse">
+            {successMessage}
+          </div>
+        )}
+
+        {/* ── Error Banner ── */}
+        {error && (
+          <div className="mb-6 px-4 py-3 bg-red-900 border border-red-500 rounded-lg text-red-300 text-sm">
+            {error}
+          </div>
+        )}
+
         <form onSubmit={handleSubmit} className="space-y-6">
           <input
             type="file"
-            accept=".docx,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
-            onChange={(e) => setFile(e.target.files?.[0] || null)}
+            accept=".docx,.doc,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+            onChange={(e) => {
+              setFile(e.target.files?.[0] || null);
+              setSuccessMessage(null);
+              setError(null);
+            }}
             required
             className="block w-full text-sm text-gray-300 file:mr-4 file:py-3 file:px-6 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-indigo-600 file:text-white hover:file:bg-indigo-700"
           />
@@ -115,26 +138,11 @@ alert('Download started! Check your downloads folder.');
             disabled={!file || loading || conversionsToday >= FREE_LIMIT}
             className="w-full py-4 px-8 bg-indigo-600 text-white font-bold rounded-full hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed transition"
           >
-            {loading ? 'Converting... (may take 10-30s first time)' : 'Convert to PDF'}
+            {loading ? 'Converting...' : 'Convert to PDF'}
           </button>
         </form>
 
-        {error && <p className="text-red-400 mt-6">{error}</p>}
-
-        {downloadUrl && (
-          <div className="mt-8">
-            <p className="text-green-400 mb-4">Conversion complete! 🎉</p>
-            <a
-              href={downloadUrl}
-              download={file?.name.replace('.docx', '.pdf') || 'converted.pdf'}
-              className="inline-block py-4 px-8 bg-green-600 text-white font-bold rounded-full hover:bg-green-700 transition"
-            >
-              Download Your PDF
-            </a>
-          </div>
-        )}
-
-        {/* Upgrade Modal */}
+        {/* ── Upgrade Modal ── */}
         {showUpgrade && (
           <div className="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50 p-4">
             <div className="bg-gray-800 rounded-xl p-8 max-w-md w-full">
@@ -174,6 +182,7 @@ alert('Download started! Check your downloads folder.');
             </div>
           </div>
         )}
+
       </div>
     </main>
   );
