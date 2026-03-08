@@ -1,5 +1,4 @@
 'use client';
-
 import { useState, useEffect } from 'react';
 
 export default function Home() {
@@ -9,7 +8,6 @@ export default function Home() {
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [conversionsToday, setConversionsToday] = useState(0);
   const [showUpgrade, setShowUpgrade] = useState(false);
-
   const FREE_LIMIT = 10;
 
   // Load today's conversion count from localStorage
@@ -49,32 +47,25 @@ export default function Home() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!file) return;
-
     if (conversionsToday >= FREE_LIMIT) {
       setShowUpgrade(true);
       return;
     }
-
     setLoading(true);
     setError(null);
     setSuccessMessage(null);
-
     const formData = new FormData();
     formData.append('file', file);
-
     try {
       const res = await fetch('/api/convert', {
         method: 'POST',
         body: formData,
       });
-
       if (!res.ok) {
         const errText = await res.text();
         throw new Error(errText || 'Conversion failed');
       }
-
       const blob = await res.blob();
-
       // Trigger automatic download
       const downloadUrl = URL.createObjectURL(blob);
       const a = document.createElement('a');
@@ -84,10 +75,8 @@ export default function Home() {
       a.click();
       document.body.removeChild(a);
       URL.revokeObjectURL(downloadUrl);
-
-      // Show styled success message — replaces the old alert()
+      // Show styled success message
       setSuccessMessage(`✓ ${file.name.replace(/\.docx?$/i, '.pdf')} is downloading now`);
-
       incrementConversion();
     } catch (err: any) {
       setError(err.message || 'Something went wrong. Please try again.');
@@ -100,8 +89,13 @@ export default function Home() {
     <main className="min-h-screen bg-gray-900 flex items-center justify-center p-8">
       <div className="max-w-md w-full bg-gray-800 rounded-xl shadow-2xl p-8 text-center">
 
+        {/* ── Wordmark ── */}
+        <p className="text-xs font-semibold tracking-widest text-indigo-400 uppercase mb-2">
+          Verbatim PDF
+        </p>
+
         <h1 className="text-4xl font-bold text-white mb-4">Word to PDF Converter</h1>
-        <p className="text-gray-300 mb-2">Upload a .docx file → Get a perfect PDF instantly</p>
+        <p className="text-gray-300 mb-2">Upload a .docx file → Get a pixel-perfect PDF instantly</p>
         <p className="text-sm text-gray-400 mb-6">
           Free tier: {FREE_LIMIT - conversionsToday} / {FREE_LIMIT} conversions left today
         </p>
@@ -132,7 +126,6 @@ export default function Home() {
             required
             className="block w-full text-sm text-gray-300 file:mr-4 file:py-3 file:px-6 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-indigo-600 file:text-white hover:file:bg-indigo-700"
           />
-
           <button
             type="submit"
             disabled={!file || loading || conversionsToday >= FREE_LIMIT}
@@ -142,36 +135,39 @@ export default function Home() {
           </button>
         </form>
 
+        {/* ── Privacy note ── */}
+        <p className="mt-6 text-xs text-gray-500">
+          Files are never stored · Converted in seconds · No account required
+        </p>
+
         {/* ── Upgrade Modal ── */}
         {showUpgrade && (
           <div className="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50 p-4">
             <div className="bg-gray-800 rounded-xl p-8 max-w-md w-full">
-              <h2 className="text-3xl font-bold text-white mb-4">Upgrade for Unlimited</h2>
-              <p className="text-gray-300 mb-8">
-                You've reached the free limit of {FREE_LIMIT} conversions today.
+
+              <p className="text-xs font-semibold tracking-widest text-indigo-400 uppercase mb-3">
+                Verbatim PDF · Pro
               </p>
 
-              <div className="space-y-4">
-                <a
-                  href="https://buy.stripe.com/00w5kD9cY4RA0fM0z04Vy06"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="block w-full py-5 bg-indigo-600 text-white font-bold rounded-full hover:bg-indigo-700 text-center text-lg transition"
-                >
-                  $2.99 / month<br />
-                  <span className="text-sm font-normal">Unlimited conversions</span>
-                </a>
+              <h2 className="text-3xl font-bold text-white mb-3">Unlimited Conversions</h2>
 
-                <a
-                  href="https://buy.stripe.com/28EcN53SE1Fo0fMa9A4Vy08"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="block w-full py-5 bg-green-600 text-white font-bold rounded-full hover:bg-green-700 text-center text-lg transition"
-                >
-                  $9.99 Lifetime<br />
-                  <span className="text-sm font-normal">Everything forever — no recurring fees</span>
-                </a>
-              </div>
+              <p className="text-gray-300 mb-2">
+                You've reached the free limit of {FREE_LIMIT} conversions today.
+              </p>
+              <p className="text-sm text-gray-400 mb-8">
+                Upgrade to Pro for unlimited Word to PDF conversions, pixel-perfect output, no ads, and files that are never stored.
+              </p>
+
+              <a
+                href="https://buy.stripe.com/6oU3cv88U5VE8MichI4Vy0a"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="block w-full py-5 bg-indigo-600 text-white font-bold rounded-full hover:bg-indigo-700 text-center text-lg transition"
+              >
+                $4.99 / month
+                <br />
+                <span className="text-sm font-normal">Unlimited · No ads · Files never stored</span>
+              </a>
 
               <button
                 onClick={() => setShowUpgrade(false)}
