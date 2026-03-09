@@ -14,49 +14,58 @@ function getSupabaseHeaders() {
 }
 
 async function getConversionsToday(ip: string): Promise<number> {
-  const startOfDay = new Date();
-  startOfDay.setHours(0, 0, 0, 0);
+  try {
+    const startOfDay = new Date();
+    startOfDay.setHours(0, 0, 0, 0);
 
-  const url = `${process.env.SUPABASE_URL}/rest/v1/conversion_log` +
-    `?ip_address=eq.${encodeURIComponent(ip)}` +
-    `&converted_at=gte.${startOfDay.toISOString()}` +
-    `&select=id`;
+    const url = `${process.env.SUPABASE_URL}/rest/v1/conversion_log` +
+      `?ip_address=eq.${encodeURIComponent(ip)}` +
+      `&converted_at=gte.${startOfDay.toISOString()}` +
+      `&select=id`;
 
-  const res = await fetch(url, {
-    headers: {
-      ...getSupabaseHeaders(),
-      'Prefer': 'count=exact',
-    },
-  });
+    const res = await fetch(url, {
+      headers: {
+        ...getSupabaseHeaders(),
+        'Prefer': 'count=exact',
+      },
+    });
 
-  if (!res.ok) {
-    console.error('Supabase count error:', await res.text());
-    // Fail open — if Supabase is down, don't block conversions
+    if (!res.ok) {
+      console.error('Supabase count error:', await res.text());
+      return 0;
+    }
+
+    // Supabase returns count in Content-Range header: "0-9/42"
+    const contentRange = res.headers.get('Content-Range');
+    if (contentRange) {
+      const total = contentRange.split('/')[1];
+      return parseInt(total, 10) || 0;
+    }
+
+    return 0;
+  } catch (err) {
+    // Fail open — if Supabase is unreachable, don't block conversions
+    console.error('Supabase getConversionsToday network error:', err);
     return 0;
   }
-
-  // Supabase returns count in Content-Range header: "0-9/42"
-  const contentRange = res.headers.get('Content-Range');
-  if (contentRange) {
-    const total = contentRange.split('/')[1];
-    return parseInt(total, 10) || 0;
-  }
-
-  return 0;
 }
 
 async function logConversion(ip: string): Promise<void> {
-  const url = `${process.env.SUPABASE_URL}/rest/v1/conversion_log`;
+  try {
+    const url = `${process.env.SUPABASE_URL}/rest/v1/conversion_log`;
 
-  const res = await fetch(url, {
-    method: 'POST',
-    headers: getSupabaseHeaders(),
-    body: JSON.stringify({ ip_address: ip }),
-  });
+    const res = await fetch(url, {
+      method: 'POST',
+      headers: getSupabaseHeaders(),
+      body: JSON.stringify({ ip_address: ip }),
+    });
 
-  if (!res.ok) {
-    console.error('Supabase log error:', await res.text());
+    if (!res.ok) {
+      console.error('Supabase log error:', await res.text());
+    }
+  } catch (err) {
     // Non-fatal — conversion already succeeded, just log the failure
+    console.error('Supabase logConversion network error:', err);
   }
 }
 
