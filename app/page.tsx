@@ -62,9 +62,14 @@ export default function Home() {
         body: formData,
       });
       if (!res.ok) {
-        const errText = await res.text();
-        throw new Error(errText || 'Conversion failed');
-      }
+  const errData = await res.json().catch(() => null);
+  if (errData?.limitReached) {
+    setShowUpgrade(true);
+    setLoading(false);
+    return;
+  }
+  throw new Error(errData?.error || 'Conversion failed');
+}
       const blob = await res.blob();
       // Trigger automatic download
       const downloadUrl = URL.createObjectURL(blob);
