@@ -69,6 +69,27 @@ async function logConversion(ip: string): Promise<void> {
   }
 }
 
+// ── Pro subscriber check ─────────────────────────────────────────────────────
+async function isProSubscriber(request: Request): Promise<boolean> {
+  try {
+    const cookieHeader = request.headers.get('cookie') || '';
+    const match = cookieHeader.match(/verbatim_pro=([^;]+)/);
+    if (!match) return false;
+    const token = decodeURIComponent(match[1]);
+    const url = `${process.env.SUPABASE_URL}/rest/v1/pro_subscribers` +
+      `?access_token=eq.${encodeURIComponent(token)}&status=eq.active&select=id`;
+    const res = await fetch(url, {
+      headers: {
+        'apikey': process.env.SUPABASE_ANON_KEY!,
+        'Authorization': `Bearer ${process.env.SUPABASE_ANON_KEY!}`,
+      },
+    });
+    if (!res.ok) return false;
+    const data = await res.json();
+    return Array.isArray(data) && data.length > 0;
+  } catch { return false; }
+}
+
 // ── IP extraction ────────────────────────────────────────────────────────────
 
 function getClientIP(request: Request): string {
@@ -98,15 +119,18 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'No file uploaded' }, { status: 400 });
     }
 
-    // ── Rate limit check ──
+// ── Pro check + Rate limit ──
     const clientIP = getClientIP(request);
-    const conversionsToday = await getConversionsToday(clientIP);
+    const isPro = await isProSubscriber(request);
 
-    if (conversionsToday >= FREE_LIMIT) {
-      return NextResponse.json(
-        { error: 'Free limit reached', limitReached: true },
-        { status: 429 }
-      );
+    if (!isPro) {
+      const conversionsToday = await getConversionsToday(clientIP);
+      if (conversionsToday >= FREE_LIMIT) {
+        return NextResponse.json(
+          { error: 'Free limit reached', limitReached: true },
+          { status: 429 }
+        );
+      }
     }
 
     // ── Convert ──
