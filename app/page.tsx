@@ -164,7 +164,7 @@ export default function Home() {
               </p>
 
               <a
-                href="https://buy.stripe.com/6oU3cv88U5VE8MichI4Vy0a"
+                href="https://buy.stripe.com/dRm14neBjb2sbJP1gJejK00"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="block w-full py-5 bg-indigo-600 text-white font-bold rounded-full hover:bg-indigo-700 text-center text-lg transition"
