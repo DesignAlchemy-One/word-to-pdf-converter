@@ -12,7 +12,7 @@ export default function Home() {
   // Detect Pro status from cookie on load
 useEffect(() => {
   const cookies = document.cookie.split(';').map(c => c.trim());
-  const proToken = cookies.find(c => c.startsWith('verbatim_pro='));
+  const proToken = cookies.find(c => c.startsWith('verbatim_pro_ui='));
   if (proToken) {
     setIsPro(true);
     setConversionsToday(0);
