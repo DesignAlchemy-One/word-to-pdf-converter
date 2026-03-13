@@ -1,5 +1,4 @@
 import { NextResponse } from 'next/server';
-
 async function validateToken(token: string): Promise<boolean> {
   try {
     const url = `${process.env.SUPABASE_URL}/rest/v1/pro_subscribers` +
@@ -15,7 +14,6 @@ async function validateToken(token: string): Promise<boolean> {
     return Array.isArray(data) && data.length > 0;
   } catch { return false; }
 }
-
 async function markActivated(token: string): Promise<void> {
   await fetch(`${process.env.SUPABASE_URL}/rest/v1/pro_subscribers?access_token=eq.${encodeURIComponent(token)}`, {
     method: 'PATCH',
@@ -27,24 +25,19 @@ async function markActivated(token: string): Promise<void> {
     body: JSON.stringify({ activated_at: new Date().toISOString() }),
   });
 }
-
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const token = searchParams.get('token');
-
   if (!token) {
     return NextResponse.redirect(new URL('/?error=missing_token', request.url));
   }
-
   const valid = await validateToken(token);
   if (!valid) {
     return NextResponse.redirect(new URL('/?error=invalid_token', request.url));
   }
-
   await markActivated(token);
-
-  // Set Pro cookie — 30 days, httpOnly, secure
   const response = NextResponse.redirect(new URL('/?activated=true', request.url));
+  // httpOnly cookie — read server-side for rate limit bypass
   response.cookies.set('verbatim_pro', token, {
     httpOnly: true,
     secure: true,
@@ -52,6 +45,13 @@ export async function GET(request: Request) {
     maxAge: 60 * 60 * 24 * 30,
     path: '/',
   });
-
+  // UI flag cookie — readable by JavaScript to show Pro status in the UI
+  response.cookies.set('verbatim_pro_ui', '1', {
+    httpOnly: false,
+    secure: true,
+    sameSite: 'lax',
+    maxAge: 60 * 60 * 24 * 30,
+    path: '/',
+  });
   return response;
 }
