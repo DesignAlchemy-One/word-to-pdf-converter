@@ -10,13 +10,15 @@ export default function Home() {
   const [isPro, setIsPro] = useState(false);
   const FREE_LIMIT = 10;
   // Detect Pro status from cookie on load
-  useEffect(() => {
-    const cookies = document.cookie.split(';').map(c => c.trim());
-    const proToken = cookies.find(c => c.startsWith('verbatim_pro='));
-    if (proToken) {
-      setIsPro(true);
-    }
-  }, []);
+useEffect(() => {
+  const cookies = document.cookie.split(';').map(c => c.trim());
+  const proToken = cookies.find(c => c.startsWith('verbatim_pro='));
+  if (proToken) {
+    setIsPro(true);
+    setConversionsToday(0);
+    localStorage.removeItem('pdf_conversions');
+  }
+}, []);
   // Load today's conversion count from localStorage (free tier only)
   useEffect(() => {
     if (isPro) return;
