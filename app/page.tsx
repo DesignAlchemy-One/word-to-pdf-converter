@@ -8,17 +8,20 @@ export default function Home() {
   const [conversionsToday, setConversionsToday] = useState(0);
   const [showUpgrade, setShowUpgrade] = useState(false);
   const [isPro, setIsPro] = useState(false);
+  const [showSignIn, setShowSignIn] = useState(false);
+  const [signInEmail, setSignInEmail] = useState('');
+  const [signInStatus, setSignInStatus] = useState<'idle' | 'sending' | 'sent' | 'error'>('idle');
   const FREE_LIMIT = 10;
   // Detect Pro status from cookie on load
-useEffect(() => {
-  const cookies = document.cookie.split(';').map(c => c.trim());
-  const proToken = cookies.find(c => c.startsWith('verbatim_pro_ui='));
-  if (proToken) {
-    setIsPro(true);
-    setConversionsToday(0);
-    localStorage.removeItem('pdf_conversions');
-  }
-}, []);
+  useEffect(() => {
+    const cookies = document.cookie.split(';').map(c => c.trim());
+    const proToken = cookies.find(c => c.startsWith('verbatim_pro_ui='));
+    if (proToken) {
+      setIsPro(true);
+      setConversionsToday(0);
+      localStorage.removeItem('pdf_conversions');
+    }
+  }, []);
   // Load today's conversion count from localStorage (free tier only)
   useEffect(() => {
     if (isPro) return;
@@ -95,6 +98,21 @@ useEffect(() => {
       setLoading(false);
     }
   };
+  const handleSignIn = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setSignInStatus('sending');
+    try {
+      const res = await fetch('/api/signin', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: signInEmail }),
+      });
+      if (!res.ok) throw new Error('Request failed');
+      setSignInStatus('sent');
+    } catch {
+      setSignInStatus('error');
+    }
+  };
   return (
     <main className="min-h-screen bg-gray-900 flex items-center justify-center p-8">
       <div className="max-w-md w-full bg-gray-800 rounded-xl shadow-2xl p-8 text-center">
@@ -150,6 +168,15 @@ useEffect(() => {
         <p className="mt-6 text-xs text-gray-500">
           Files are never stored · Converted in seconds · No account required
         </p>
+        {/* ── Already a subscriber link (free tier only) ── */}
+        {!isPro && (
+          <button
+            onClick={() => setShowSignIn(true)}
+            className="mt-3 text-xs text-gray-500 hover:text-indigo-400 underline transition"
+          >
+            Already a subscriber? Sign in
+          </button>
+        )}
         {/* ── Upgrade Modal (free tier only) ── */}
         {showUpgrade && !isPro && (
           <div className="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50 p-4">
@@ -175,11 +202,73 @@ useEffect(() => {
                 <span className="text-sm font-normal">Unlimited · No ads · Files never stored</span>
               </a>
               <button
+                onClick={() => { setShowUpgrade(false); setShowSignIn(true); }}
+                className="mt-6 text-indigo-400 hover:text-indigo-300 text-sm underline"
+              >
+                Already a subscriber? Sign in
+              </button>
+              <button
                 onClick={() => setShowUpgrade(false)}
-                className="mt-8 text-gray-400 hover:text-white text-sm"
+                className="mt-4 block w-full text-gray-400 hover:text-white text-sm"
               >
                 Maybe later
               </button>
+            </div>
+          </div>
+        )}
+        {/* ── Sign In Modal ── */}
+        {showSignIn && (
+          <div className="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50 p-4">
+            <div className="bg-gray-800 rounded-xl p-8 max-w-md w-full">
+              <p className="text-xs font-semibold tracking-widest text-indigo-400 uppercase mb-3">
+                Verbatim PDF · Pro
+              </p>
+              <h2 className="text-2xl font-bold text-white mb-3">Sign in to Pro</h2>
+              {signInStatus === 'sent' ? (
+                <>
+                  <div className="mb-6 px-4 py-3 bg-green-900 border border-green-500 rounded-lg text-green-300 text-sm">
+                    ✓ Check your email — your sign-in link is on its way.
+                  </div>
+                  <button
+                    onClick={() => { setShowSignIn(false); setSignInStatus('idle'); setSignInEmail(''); }}
+                    className="mt-2 text-gray-400 hover:text-white text-sm"
+                  >
+                    Close
+                  </button>
+                </>
+              ) : (
+                <>
+                  <p className="text-gray-400 text-sm mb-6">
+                    Enter the email address you used to subscribe. We'll send you a link to restore Pro access in this browser.
+                  </p>
+                  <form onSubmit={handleSignIn} className="space-y-4">
+                    <input
+                      type="email"
+                      value={signInEmail}
+                      onChange={(e) => setSignInEmail(e.target.value)}
+                      placeholder="your@email.com"
+                      required
+                      className="w-full px-4 py-3 rounded-lg bg-gray-700 text-white placeholder-gray-400 border border-gray-600 focus:border-indigo-500 focus:outline-none text-sm"
+                    />
+                    <button
+                      type="submit"
+                      disabled={signInStatus === 'sending'}
+                      className="w-full py-3 bg-indigo-600 text-white font-bold rounded-full hover:bg-indigo-700 disabled:opacity-50 transition text-sm"
+                    >
+                      {signInStatus === 'sending' ? 'Sending...' : 'Send Sign-in Link'}
+                    </button>
+                  </form>
+                  {signInStatus === 'error' && (
+                    <p className="mt-3 text-red-400 text-xs">Something went wrong. Please try again.</p>
+                  )}
+                  <button
+                    onClick={() => { setShowSignIn(false); setSignInStatus('idle'); setSignInEmail(''); }}
+                    className="mt-6 text-gray-400 hover:text-white text-sm"
+                  >
+                    Cancel
+                  </button>
+                </>
+              )}
             </div>
           </div>
         )}
