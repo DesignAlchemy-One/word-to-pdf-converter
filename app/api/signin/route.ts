@@ -37,9 +37,9 @@ async function sendSignInEmail(email: string, token: string): Promise<void> {
         <div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;background:#111827;color:#ffffff;padding:40px;border-radius:12px;">
           <p style="color:#818cf8;font-size:11px;font-weight:bold;letter-spacing:3px;text-transform:uppercase;margin-bottom:8px;">VERBATIM PDF</p>
           <h1 style="color:#ffffff;font-size:28px;margin-bottom:12px;">Sign in to Pro.</h1>
-          <p style="color:#9ca3af;font-size:16px;margin-bottom:32px;">Click below to restore your unlimited Word to PDF access in this browser. This link is unique to your account.</p>
+          <p style="color:#9ca3af;font-size:16px;margin-bottom:32px;">Copy the link below and paste it into the browser where you want Pro access activated. This link is unique to your account.</p>
           <a href="${activationUrl}" style="display:inline-block;background:#4f46e5;color:#ffffff;font-weight:bold;font-size:16px;padding:18px 36px;border-radius:50px;text-decoration:none;margin-bottom:32px;">Activate Pro Access →</a>
-          <p style="color:#6b7280;font-size:13px;margin-bottom:32px;">Or copy this link:<br/>${activationUrl}</p>
+          <p style="color:#6b7280;font-size:13px;margin-bottom:32px;"><strong style="color:#9ca3af;">Copy and paste this link into your target browser:</strong><br/>${activationUrl}</p>
           <hr style="border:1px solid #1f2937;margin:24px 0;" />
           <p style="color:#4b5563;font-size:12px;">Files are never stored · Converted in seconds · No account required</p>
         </div>
