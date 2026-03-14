@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import Script from 'next/script'
 
 export const metadata: Metadata = {
   title: "Word to PDF Converter — Free, Fast & Pixel-Perfect | Verbatim PDF",
@@ -36,7 +37,21 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body>{children}</body>
+      <body>
+        <Script
+          src="https://www.googletagmanager.com/gtag/js?id=G-MV7Q3S72ET"
+          strategy="afterInteractive"
+        />
+        <Script id="google-analytics" strategy="afterInteractive">
+          {`
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+            gtag('config', 'G-MV7Q3S72ET');
+          `}
+        </Script>
+        {children}
+      </body>
     </html>
   );
 }
