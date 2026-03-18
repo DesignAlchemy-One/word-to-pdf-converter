@@ -1,6 +1,5 @@
 import { NextResponse } from 'next/server';
 import crypto from 'crypto';
-
 // ── Stripe signature verification (no SDK needed) ────────────────────────────
 function verifyStripeSignature(payload: string, sig: string, secret: string): boolean {
   try {
@@ -15,16 +14,14 @@ function verifyStripeSignature(payload: string, sig: string, secret: string): bo
     });
   } catch { return false; }
 }
-
 // ── Supabase helpers ─────────────────────────────────────────────────────────
 function getSupabaseHeaders() {
   return {
-    'apikey': process.env.SUPABASE_ANON_KEY!,
-    'Authorization': `Bearer ${process.env.SUPABASE_ANON_KEY!}`,
+    'apikey': process.env.SUPABASE_SERVICE_ROLE_KEY!,
+    'Authorization': `Bearer ${process.env.SUPABASE_SERVICE_ROLE_KEY!}`,
     'Content-Type': 'application/json',
   };
 }
-
 async function createProSubscriber(email: string, customerId: string, token: string): Promise<void> {
   const res = await fetch(`${process.env.SUPABASE_URL}/rest/v1/pro_subscribers`, {
     method: 'POST',
@@ -33,7 +30,6 @@ async function createProSubscriber(email: string, customerId: string, token: str
   });
   if (!res.ok) throw new Error(`Supabase insert failed: ${await res.text()}`);
 }
-
 async function cancelProSubscriber(customerId: string): Promise<void> {
   await fetch(`${process.env.SUPABASE_URL}/rest/v1/pro_subscribers?stripe_customer_id=eq.${customerId}`, {
     method: 'PATCH',
@@ -41,7 +37,6 @@ async function cancelProSubscriber(customerId: string): Promise<void> {
     body: JSON.stringify({ status: 'cancelled' }),
   });
 }
-
 // ── Resend magic link email ──────────────────────────────────────────────────
 async function sendMagicLinkEmail(email: string, token: string): Promise<void> {
   const activationUrl = `https://verbatimpdf.com/api/activate?token=${token}`;
@@ -70,13 +65,11 @@ async function sendMagicLinkEmail(email: string, token: string): Promise<void> {
   });
   if (!res.ok) throw new Error(`Resend failed: ${await res.text()}`);
 }
-
 // ── Main webhook handler ─────────────────────────────────────────────────────
 export async function POST(request: Request) {
   const payload = await request.text();
   const signature = request.headers.get('stripe-signature');
   const secret = process.env.STRIPE_WEBHOOK_SECRET;
-
   if (!signature || !secret) {
     return NextResponse.json({ error: 'Missing signature or secret' }, { status: 400 });
   }
@@ -84,10 +77,8 @@ export async function POST(request: Request) {
     console.error('Stripe signature verification failed');
     return NextResponse.json({ error: 'Invalid signature' }, { status: 400 });
   }
-
   const event = JSON.parse(payload);
   console.log('Stripe webhook received:', event.type);
-
   try {
     if (event.type === 'checkout.session.completed') {
       const session = event.data.object;
@@ -102,13 +93,11 @@ export async function POST(request: Request) {
       await sendMagicLinkEmail(email, token);
       console.log(`Pro subscriber created and email sent: ${email}`);
     }
-
     if (event.type === 'customer.subscription.deleted') {
       const customerId = event.data.object.customer;
       await cancelProSubscriber(customerId);
       console.log(`Subscription cancelled for customer: ${customerId}`);
     }
-
     return NextResponse.json({ received: true });
   } catch (error: any) {
     console.error('Webhook error:', error.message);
