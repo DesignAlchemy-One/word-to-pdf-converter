@@ -5,8 +5,8 @@ async function validateToken(token: string): Promise<boolean> {
       `?access_token=eq.${encodeURIComponent(token)}&status=eq.active&select=id`;
     const res = await fetch(url, {
       headers: {
-        'apikey': process.env.SUPABASE_ANON_KEY!,
-        'Authorization': `Bearer ${process.env.SUPABASE_ANON_KEY!}`,
+        'apikey': process.env.SUPABASE_SERVICE_ROLE_KEY!,
+        'Authorization': `Bearer ${process.env.SUPABASE_SERVICE_ROLE_KEY!}`,
       },
     });
     if (!res.ok) return false;
@@ -18,8 +18,8 @@ async function markActivated(token: string): Promise<void> {
   await fetch(`${process.env.SUPABASE_URL}/rest/v1/pro_subscribers?access_token=eq.${encodeURIComponent(token)}`, {
     method: 'PATCH',
     headers: {
-      'apikey': process.env.SUPABASE_ANON_KEY!,
-      'Authorization': `Bearer ${process.env.SUPABASE_ANON_KEY!}`,
+      'apikey': process.env.SUPABASE_SERVICE_ROLE_KEY!,
+      'Authorization': `Bearer ${process.env.SUPABASE_SERVICE_ROLE_KEY!}`,
       'Content-Type': 'application/json',
     },
     body: JSON.stringify({ activated_at: new Date().toISOString() }),
