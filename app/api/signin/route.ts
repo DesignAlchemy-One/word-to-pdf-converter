@@ -1,14 +1,12 @@
 import { NextResponse } from 'next/server';
-
 // ── Supabase helpers ─────────────────────────────────────────────────────────
 function getSupabaseHeaders() {
   return {
-    'apikey': process.env.SUPABASE_ANON_KEY!,
-    'Authorization': `Bearer ${process.env.SUPABASE_ANON_KEY!}`,
+    'apikey': process.env.SUPABASE_SERVICE_ROLE_KEY!,
+    'Authorization': `Bearer ${process.env.SUPABASE_SERVICE_ROLE_KEY!}`,
     'Content-Type': 'application/json',
   };
 }
-
 async function getSubscriberByEmail(email: string): Promise<{ access_token: string } | null> {
   try {
     const url = `${process.env.SUPABASE_URL}/rest/v1/pro_subscribers` +
@@ -19,7 +17,6 @@ async function getSubscriberByEmail(email: string): Promise<{ access_token: stri
     return Array.isArray(data) && data.length > 0 ? data[0] : null;
   } catch { return null; }
 }
-
 // ── Resend sign-in email ─────────────────────────────────────────────────────
 async function sendSignInEmail(email: string, token: string): Promise<void> {
   const activationUrl = `https://verbatimpdf.com/api/activate?token=${encodeURIComponent(token)}`;
@@ -48,26 +45,20 @@ async function sendSignInEmail(email: string, token: string): Promise<void> {
   });
   if (!res.ok) throw new Error(`Resend failed: ${await res.text()}`);
 }
-
 // ── Main handler ─────────────────────────────────────────────────────────────
 export async function POST(request: Request) {
   try {
     const { email } = await request.json();
-
     if (!email || typeof email !== 'string' || !email.includes('@')) {
       return NextResponse.json({ error: 'Valid email required' }, { status: 400 });
     }
-
     const subscriber = await getSubscriberByEmail(email.toLowerCase().trim());
-
     // Always return success — never reveal whether an email is in the system
     if (!subscriber) {
       return NextResponse.json({ success: true });
     }
-
     await sendSignInEmail(email.toLowerCase().trim(), subscriber.access_token);
     return NextResponse.json({ success: true });
-
   } catch (error: any) {
     console.error('Sign-in error:', error.message);
     return NextResponse.json({ error: 'Something went wrong' }, { status: 500 });
