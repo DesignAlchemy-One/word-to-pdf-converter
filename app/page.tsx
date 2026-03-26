@@ -439,7 +439,7 @@ export default function Home() {
                 Upgrade to Pro for unlimited Word to PDF conversions, batch convert up to 20 files
                 at once, pixel-perfect output, no ads, and files that are never stored.
               </p>
-              
+              <a
                 href="https://buy.stripe.com/dRm14neBjb2sbJP1gJejK00"
                 target="_blank"
                 rel="noopener noreferrer"
