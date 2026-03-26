@@ -8,7 +8,6 @@ const FREE_MAX_MB = 10;
 const PRO_MAX_MB = 25;
 
 export default function Home() {
-  // ── Single file state ──
   const [file, setFile] = useState<File | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -19,11 +18,7 @@ export default function Home() {
   const [showSignIn, setShowSignIn] = useState(false);
   const [signInEmail, setSignInEmail] = useState('');
   const [signInStatus, setSignInStatus] = useState<'idle' | 'sending' | 'sent' | 'error'>('idle');
-
-  // ── Mode toggle ──
   const [mode, setMode] = useState<'single' | 'batch'>('single');
-
-  // ── Batch state ──
   const [batchFiles, setBatchFiles] = useState<File[]>([]);
   const [batchLoading, setBatchLoading] = useState(false);
   const [batchError, setBatchError] = useState<string | null>(null);
@@ -31,10 +26,9 @@ export default function Home() {
   const [batchProgress, setBatchProgress] = useState<string | null>(null);
   const batchInputRef = useRef<HTMLInputElement>(null);
 
-  // ── Detect Pro status from cookie on load ──
   useEffect(() => {
-    const cookies = document.cookie.split(';').map(c => c.trim());
-    const proToken = cookies.find(c => c.startsWith('verbatim_pro_ui='));
+    const cookies = document.cookie.split(';').map((c) => c.trim());
+    const proToken = cookies.find((c) => c.startsWith('verbatim_pro_ui='));
     if (proToken) {
       setIsPro(true);
       setConversionsToday(0);
@@ -42,7 +36,6 @@ export default function Home() {
     }
   }, []);
 
-  // ── Load today's conversion count from localStorage (free tier only) ──
   useEffect(() => {
     if (isPro) return;
     const today = new Date().toDateString();
@@ -55,7 +48,6 @@ export default function Home() {
     }
   }, [isPro]);
 
-  // ── Auto-show upgrade modal when limit reached (free tier only) ──
   useEffect(() => {
     if (isPro) return;
     if (conversionsToday >= FREE_LIMIT) {
@@ -63,7 +55,6 @@ export default function Home() {
     }
   }, [conversionsToday, isPro]);
 
-  // ── Auto-dismiss success messages after 5 seconds ──
   useEffect(() => {
     if (successMessage) {
       const timer = setTimeout(() => setSuccessMessage(null), 5000);
@@ -78,7 +69,6 @@ export default function Home() {
     }
   }, [batchSuccess]);
 
-  // ── Clear batch state when switching modes ──
   useEffect(() => {
     setBatchFiles([]);
     setBatchError(null);
@@ -96,7 +86,6 @@ export default function Home() {
     localStorage.setItem('pdf_conversions', JSON.stringify({ date: today, count: newCount }));
   };
 
-  // ── Single file handler (unchanged) ──
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!file) return;
@@ -127,7 +116,7 @@ export default function Home() {
       const downloadUrl = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = downloadUrl;
-      a.download = file?.name.replace(/\.docx?$/i, '.pdf') || 'converted.pdf';
+      a.download = file.name.replace(/\.docx?$/i, '.pdf') || 'converted.pdf';
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
@@ -141,7 +130,6 @@ export default function Home() {
     }
   };
 
-  // ── Batch file handlers ──
   const batchLimit = isPro ? PRO_BATCH_LIMIT : FREE_BATCH_LIMIT;
   const maxMB = isPro ? PRO_MAX_MB : FREE_MAX_MB;
 
@@ -149,27 +137,29 @@ export default function Home() {
     setBatchError(null);
     const selected = Array.from(e.target.files || []);
     if (selected.length === 0) return;
-
-    const oversized = selected.find(f => f.size > maxMB * 1024 * 1024);
+    const oversized = selected.find((f) => f.size > maxMB * 1024 * 1024);
     if (oversized) {
-      setBatchError(`${oversized.name} exceeds the ${maxMB}MB limit per file.${!isPro ? ' Upgrade to Pro for up to 25MB per file.' : ''}`);
+      setBatchError(
+        `${oversized.name} exceeds the ${maxMB}MB limit per file.${!isPro ? ' Upgrade to Pro for up to 25MB per file.' : ''}`
+      );
       return;
     }
-
     const combined = [...batchFiles, ...selected];
-    const unique = combined.filter((f, i, arr) => arr.findIndex(x => x.name === f.name) === i);
-
+    const unique = combined.filter(
+      (f, i, arr) => arr.findIndex((x) => x.name === f.name) === i
+    );
     if (unique.length > batchLimit) {
-      setBatchError(`You can convert up to ${batchLimit} files at once.${!isPro ? ' Upgrade to Pro for up to 20 files per batch.' : ''}`);
+      setBatchError(
+        `You can convert up to ${batchLimit} files at once.${!isPro ? ' Upgrade to Pro for up to 20 files per batch.' : ''}`
+      );
       return;
     }
-
     setBatchFiles(unique);
     if (batchInputRef.current) batchInputRef.current.value = '';
   };
 
   const removeBatchFile = (name: string) => {
-    setBatchFiles(prev => prev.filter(f => f.name !== name));
+    setBatchFiles((prev) => prev.filter((f) => f.name !== name));
     setBatchError(null);
   };
 
@@ -180,21 +170,19 @@ export default function Home() {
       setShowUpgrade(true);
       return;
     }
-
     setBatchLoading(true);
     setBatchError(null);
     setBatchSuccess(null);
-    setBatchProgress(`Converting ${batchFiles.length} file${batchFiles.length > 1 ? 's' : ''}...`);
-
+    setBatchProgress(
+      `Converting ${batchFiles.length} file${batchFiles.length > 1 ? 's' : ''}...`
+    );
     const formData = new FormData();
-    batchFiles.forEach(f => formData.append('files', f, f.name));
-
+    batchFiles.forEach((f) => formData.append('files', f, f.name));
     try {
       const res = await fetch('/api/batch', {
         method: 'POST',
         body: formData,
       });
-
       if (!res.ok) {
         const errData = await res.json().catch(() => null);
         if (errData?.limitReached) {
@@ -205,44 +193,39 @@ export default function Home() {
         }
         throw new Error(errData?.error || 'Batch conversion failed');
       }
-
       const blob = await res.blob();
       const downloadUrl = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = downloadUrl;
-      const today = new Date().toISOString().slice(0, 10);
-      a.download = `verbatim-pdf-batch-${today}.zip`;
+      const zipDate = new Date().toISOString().slice(0, 10);
+      a.download = `verbatim-pdf-batch-${zipDate}.zip`;
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
       URL.revokeObjectURL(downloadUrl);
-
-      // Parse per-file results from header
       const resultsHeader = res.headers.get('X-Batch-Results');
       let successCount = batchFiles.length;
       let failCount = 0;
       if (resultsHeader) {
-        try {
-          const results = JSON.parse(resultsHeader);
-          successCount = results.filter((r: any) => r.success).length;
-          failCount = results.filter((r: any) => !r.success).length;
-        } catch {}
+        const parsed = JSON.parse(resultsHeader);
+        successCount = parsed.filter((r: any) => r.success).length;
+        failCount = parsed.filter((r: any) => !r.success).length;
       }
-
       if (!isPro) {
-        const today = new Date().toDateString();
+        const logDate = new Date().toDateString();
         const newCount = conversionsToday + successCount;
         setConversionsToday(newCount);
-        localStorage.setItem('pdf_conversions', JSON.stringify({ date: today, count: newCount }));
+        localStorage.setItem(
+          'pdf_conversions',
+          JSON.stringify({ date: logDate, count: newCount })
+        );
       }
-
-      const message = failCount > 0
-        ? `✓ ${successCount} PDF${successCount > 1 ? 's' : ''} downloaded as ZIP. ${failCount} file${failCount > 1 ? 's' : ''} could not be converted.`
-        : `✓ ${successCount} PDF${successCount > 1 ? 's' : ''} downloaded as ZIP`;
-
+      const message =
+        failCount > 0
+          ? `✓ ${successCount} PDF${successCount > 1 ? 's' : ''} downloaded as ZIP. ${failCount} file${failCount > 1 ? 's' : ''} could not be converted.`
+          : `✓ ${successCount} PDF${successCount > 1 ? 's' : ''} downloaded as ZIP`;
       setBatchSuccess(message);
       setBatchFiles([]);
-
     } catch (err: any) {
       setBatchError(err.message || 'Something went wrong. Please try again.');
     } finally {
@@ -251,7 +234,6 @@ export default function Home() {
     }
   };
 
-  // ── Sign in handler (unchanged) ──
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
     setSignInStatus('sending');
@@ -263,7 +245,7 @@ export default function Home() {
       });
       if (!res.ok) throw new Error('Request failed');
       setSignInStatus('sent');
-    } catch {
+    } catch (_e) {
       setSignInStatus('error');
     }
   };
@@ -272,14 +254,12 @@ export default function Home() {
     <main className="min-h-screen bg-gray-900 flex items-center justify-center p-8">
       <div className="max-w-md w-full bg-gray-800 rounded-xl shadow-2xl p-8 text-center">
 
-        {/* ── Wordmark ── */}
         <p className="text-xs font-semibold tracking-widest text-indigo-400 uppercase mb-2">
           Verbatim PDF
         </p>
         <h1 className="text-4xl font-bold text-white mb-4">Word to PDF Converter</h1>
         <p className="text-gray-300 mb-2">Upload a .docx file and get a pixel-perfect PDF instantly</p>
 
-        {/* ── Tier status line ── */}
         {isPro ? (
           <p className="text-sm font-semibold text-indigo-400 mb-4">
             Pro — Unlimited conversions
@@ -290,14 +270,11 @@ export default function Home() {
           </p>
         )}
 
-        {/* ── Mode Toggle ── */}
         <div className="flex rounded-full bg-gray-700 p-1 mb-6">
           <button
             onClick={() => setMode('single')}
             className={`flex-1 py-2 text-sm font-semibold rounded-full transition ${
-              mode === 'single'
-                ? 'bg-indigo-600 text-white'
-                : 'text-gray-400 hover:text-white'
+              mode === 'single' ? 'bg-indigo-600 text-white' : 'text-gray-400 hover:text-white'
             }`}
           >
             Convert one
@@ -305,18 +282,13 @@ export default function Home() {
           <button
             onClick={() => setMode('batch')}
             className={`flex-1 py-2 text-sm font-semibold rounded-full transition ${
-              mode === 'batch'
-                ? 'bg-indigo-600 text-white'
-                : 'text-gray-400 hover:text-white'
+              mode === 'batch' ? 'bg-indigo-600 text-white' : 'text-gray-400 hover:text-white'
             }`}
           >
             Convert multiple
           </button>
         </div>
 
-        {/* ══════════════════════════════════════════
-            SINGLE FILE MODE
-        ══════════════════════════════════════════ */}
         {mode === 'single' && (
           <>
             {successMessage && (
@@ -352,18 +324,13 @@ export default function Home() {
           </>
         )}
 
-        {/* ══════════════════════════════════════════
-            BATCH MODE
-        ══════════════════════════════════════════ */}
         {mode === 'batch' && (
           <>
-            {/* Batch limit indicator */}
             <p className="text-xs text-gray-400 mb-3">
               {isPro
                 ? `Add up to ${PRO_BATCH_LIMIT} files · Max ${PRO_MAX_MB}MB each`
                 : `Free: up to ${FREE_BATCH_LIMIT} files · Max ${FREE_MAX_MB}MB each`}
             </p>
-
             {batchSuccess && (
               <div className="mb-4 px-4 py-3 bg-green-900 border border-green-500 rounded-lg text-green-300 text-sm font-medium">
                 {batchSuccess}
@@ -379,9 +346,7 @@ export default function Home() {
                 {batchProgress}
               </div>
             )}
-
             <form onSubmit={handleBatchSubmit} className="space-y-4">
-              {/* File selector */}
               <input
                 ref={batchInputRef}
                 type="file"
@@ -391,15 +356,15 @@ export default function Home() {
                 disabled={batchFiles.length >= batchLimit}
                 className="block w-full text-sm text-gray-300 file:mr-4 file:py-3 file:px-6 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-indigo-600 file:text-white hover:file:bg-indigo-700 disabled:opacity-40 disabled:cursor-not-allowed"
               />
-
-              {/* File list */}
               {batchFiles.length > 0 && (
                 <div className="bg-gray-700 rounded-lg divide-y divide-gray-600 text-left max-h-48 overflow-y-auto">
                   {batchFiles.map((f) => (
                     <div key={f.name} className="flex items-center justify-between px-4 py-2">
                       <div className="flex-1 min-w-0 mr-3">
                         <p className="text-sm text-white truncate">{f.name}</p>
-                        <p className="text-xs text-gray-400">{(f.size / 1024 / 1024).toFixed(1)} MB</p>
+                        <p className="text-xs text-gray-400">
+                          {(f.size / 1024 / 1024).toFixed(1)} MB
+                        </p>
                       </div>
                       <button
                         type="button"
@@ -412,17 +377,18 @@ export default function Home() {
                   ))}
                 </div>
               )}
-
-              {/* File count */}
               {batchFiles.length > 0 && (
                 <p className="text-xs text-gray-400">
                   {batchFiles.length} / {batchLimit} files selected
                 </p>
               )}
-
               <button
                 type="submit"
-                disabled={batchFiles.length === 0 || batchLoading || (!isPro && conversionsToday >= FREE_LIMIT)}
+                disabled={
+                  batchFiles.length === 0 ||
+                  batchLoading ||
+                  (!isPro && conversionsToday >= FREE_LIMIT)
+                }
                 className="w-full py-4 px-8 bg-indigo-600 text-white font-bold rounded-full hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed transition"
               >
                 {batchLoading
@@ -432,8 +398,6 @@ export default function Home() {
                   : 'Convert to PDF'}
               </button>
             </form>
-
-            {/* Upgrade nudge for free users */}
             {!isPro && (
               <p className="mt-3 text-xs text-gray-500">
                 Need more?{' '}
@@ -448,12 +412,10 @@ export default function Home() {
           </>
         )}
 
-        {/* ── Privacy note ── */}
         <p className="mt-6 text-xs text-gray-500">
           Files are never stored · Converted in seconds · No account required
         </p>
 
-        {/* ── Already a subscriber link (free tier only) ── */}
         {!isPro && (
           <button
             onClick={() => setShowSignIn(true)}
@@ -463,7 +425,6 @@ export default function Home() {
           </button>
         )}
 
-        {/* ── Upgrade Modal ── */}
         {showUpgrade && !isPro && (
           <div className="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50 p-4">
             <div className="bg-gray-800 rounded-xl p-8 max-w-md w-full">
@@ -475,7 +436,8 @@ export default function Home() {
                 You've reached the free limit of {FREE_LIMIT} conversions today.
               </p>
               <p className="text-sm text-gray-400 mb-8">
-                Upgrade to Pro for unlimited Word to PDF conversions, batch convert up to 20 files at once, pixel-perfect output, no ads, and files that are never stored.
+                Upgrade to Pro for unlimited Word to PDF conversions, batch convert up to 20 files
+                at once, pixel-perfect output, no ads, and files that are never stored.
               </p>
               
                 href="https://buy.stripe.com/dRm14neBjb2sbJP1gJejK00"
@@ -485,10 +447,15 @@ export default function Home() {
               >
                 $4.99 / month
                 <br />
-                <span className="text-sm font-normal">Unlimited · Batch convert · Files never stored</span>
+                <span className="text-sm font-normal">
+                  Unlimited · Batch convert · Files never stored
+                </span>
               </a>
               <button
-                onClick={() => { setShowUpgrade(false); setShowSignIn(true); }}
+                onClick={() => {
+                  setShowUpgrade(false);
+                  setShowSignIn(true);
+                }}
                 className="mt-6 text-indigo-400 hover:text-indigo-300 text-sm underline"
               >
                 Already a subscriber? Sign in
@@ -503,7 +470,6 @@ export default function Home() {
           </div>
         )}
 
-        {/* ── Sign In Modal (unchanged) ── */}
         {showSignIn && (
           <div className="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50 p-4">
             <div className="bg-gray-800 rounded-xl p-8 max-w-md w-full">
@@ -517,7 +483,11 @@ export default function Home() {
                     ✓ Check your email — your sign-in link is on its way.
                   </div>
                   <button
-                    onClick={() => { setShowSignIn(false); setSignInStatus('idle'); setSignInEmail(''); }}
+                    onClick={() => {
+                      setShowSignIn(false);
+                      setSignInStatus('idle');
+                      setSignInEmail('');
+                    }}
                     className="mt-2 text-gray-400 hover:text-white text-sm"
                   >
                     Close
@@ -526,7 +496,8 @@ export default function Home() {
               ) : (
                 <>
                   <p className="text-gray-400 text-sm mb-6">
-                    Enter the email address you used to subscribe. We'll send you a link to restore Pro access in this browser.
+                    Enter the email address you used to subscribe. We'll send you a link to restore
+                    Pro access in this browser.
                   </p>
                   <form onSubmit={handleSignIn} className="space-y-4">
                     <input
@@ -546,10 +517,16 @@ export default function Home() {
                     </button>
                   </form>
                   {signInStatus === 'error' && (
-                    <p className="mt-3 text-red-400 text-xs">Something went wrong. Please try again.</p>
+                    <p className="mt-3 text-red-400 text-xs">
+                      Something went wrong. Please try again.
+                    </p>
                   )}
                   <button
-                    onClick={() => { setShowSignIn(false); setSignInStatus('idle'); setSignInEmail(''); }}
+                    onClick={() => {
+                      setShowSignIn(false);
+                      setSignInStatus('idle');
+                      setSignInEmail('');
+                    }}
                     className="mt-6 text-gray-400 hover:text-white text-sm"
                   >
                     Cancel
