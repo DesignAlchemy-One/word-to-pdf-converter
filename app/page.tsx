@@ -341,6 +341,14 @@ if (unique.length > batchLimit) {
             {batchError && (
               <div className="mb-4 px-4 py-3 bg-red-900 border border-red-500 rounded-lg text-red-300 text-sm">
                 {batchError}
+                {!isPro && (
+                  <button
+                    onClick={() => setShowUpgrade(true)}
+                    className="mt-3 w-full py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold rounded-full transition"
+                  >
+                    Upgrade to Pro — 20 files per batch
+                  </button>
+                )}
               </div>
             )}
             {batchProgress && (
