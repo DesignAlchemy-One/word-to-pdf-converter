@@ -150,7 +150,7 @@ export default function Home() {
     );
 if (unique.length > batchLimit) {
       setBatchError(
-        `You can convert up to ${batchLimit} files at once.${!isPro ? ' Upgrade to Pro for up to 20 files per batch.' : ''}`
+        `${unique.length} files selected. We kept the first ${batchLimit} for you. Remove a file to swap in a different one${!isPro ? ', or upgrade to Pro for up to 20 files per batch' : ''}.`
       );
       setBatchFiles(unique.slice(0, batchLimit));
       if (batchInputRef.current) batchInputRef.current.value = '';
