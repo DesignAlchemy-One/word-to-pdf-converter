@@ -148,10 +148,12 @@ export default function Home() {
     const unique = combined.filter(
       (f, i, arr) => arr.findIndex((x) => x.name === f.name) === i
     );
-    if (unique.length > batchLimit) {
+if (unique.length > batchLimit) {
       setBatchError(
         `You can convert up to ${batchLimit} files at once.${!isPro ? ' Upgrade to Pro for up to 20 files per batch.' : ''}`
       );
+      setBatchFiles(unique.slice(0, batchLimit));
+      if (batchInputRef.current) batchInputRef.current.value = '';
       return;
     }
     setBatchFiles(unique);
@@ -200,7 +202,7 @@ export default function Home() {
       const zipDate = new Date().toISOString().slice(0, 10);
       a.download = `verbatim-pdf-batch-${zipDate}.zip`;
       document.body.appendChild(a);
-      a.click();
+      setTimeout(() => a.click(), 300);
       document.body.removeChild(a);
       URL.revokeObjectURL(downloadUrl);
       const resultsHeader = res.headers.get('X-Batch-Results');
